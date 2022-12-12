@@ -16,6 +16,34 @@ platform :android do
     end
   end
 
+  desc "Deploy (Upload to play store)"
+  # trigger this lane to upload app in internal app sharing
+  # command: bundle exec fastlane internal_sharing 
+  lane :internal_sharing do |options|
+    begin
+      applink= upload_to_play_store_internal_app_sharing(
+        aab: '../build/app/outputs/bundle/release/app-release.aab',
+        )
+
+      # send link of internal app sharing in slack channel
+      slack_url = "https://hooks.slack.com/services/....."
+      slack(
+           message: "App Updated!",
+           success: true,
+           slack_url: slack_url,
+           attachment_properties: { 
+           fields: [{
+            title: "app link",
+            value: applink,
+            short: false
+            }]
+          }
+        )
+      rescue => exception
+        on_error(exception)
+      end
+    end
+
 
 
 
