@@ -1,0 +1,56 @@
+stages:
+  - build
+  - deploy
+
+before_script:
+  - export PATH="$PATH:/home/gitlab-runner/flutter/bin"
+  - flutter --version
+  - fastlane --version
+
+
+# deploy aab to playstore
+# run this pipeline only if QA approve app
+
+# comment this if building apk
+
+android:build:
+  stage: build
+  only:
+    - qa
+    # - production
+  tags:
+    - shell
+  script:
+    - echo "Building aab"
+    - pwd
+    
+    - cd android
+    - fastlane build_aab
+    - fastlane internal_sharing
+    - cd ..
+
+  artifacts:
+    paths:
+      - ./build/app/outputs/bundle/release/app-release.aab
+    expire_in: 1 week
+  interruptible: true
+
+
+android:deploy:
+  stage: deploy
+  only:
+    - qa
+    # - production
+  tags:
+    - shell
+  script:
+    - echo "Building aab"
+    - pwd
+    
+    - cd android
+    - fastlane deploy_android
+    - cd ..
+
+  when: manual
+  dependencies:
+    - android:build
