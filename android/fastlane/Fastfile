@@ -4,12 +4,36 @@ platform :android do
 
   desc "Build android aab"
   lane :build_aab do
-    # get the version of from google console which is in production  (note: this also return inreview app version)
-    version = google_play_track_version_codes(track: 'production')[0].to_i
-    # increament version code
-    version = version +1
-    # build script for flutter
-    sh "/fastlane-files/flutter_build.sh #{version}"
+    begin
+      # get the version of from google console which is in production  (note: this also return inreview app version)
+      version = google_play_track_version_codes(track: 'production')[0].to_i
+      # increament version code
+      version = version +1
+      # build script for flutter
+      sh "/fastlane-files/flutter_build.sh #{version}"
+    rescue => exception
+      on_error(exception)
+    end
+  end
+
+
+
+
+  def on_error(exception)
+    slack(
+        message: "App name !! thing goes wrong",
+        success: false,
+        slack_url: "https://hooks.slack.com/services/..",
+        attachment_properties: {
+            fields: [
+                {
+                    title: "Error message",
+                    value: exception.to_s,
+                    short: false
+                }
+            ]
+        }
+    )
   end
 
 end
