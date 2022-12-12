@@ -44,7 +44,25 @@ platform :android do
       end
     end
 
-
+  desc "Deploy (Upload to play store)"
+  #  we will upload to production by default
+  lane :deploy_android do |options|
+    begin
+      upload_to_play_store(
+        track: options[:production],
+        aab: '../build/app/outputs/bundle/release/app-release.aab',
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+      )
+      slack(
+        message: "App sucessfully published in play store.",
+        success: true,
+        slack_url: "https://hooks.slack.com/services/...",
+    )
+    rescue => exception
+      on_error(exception)
+    end
+  end
 
 
   def on_error(exception)
